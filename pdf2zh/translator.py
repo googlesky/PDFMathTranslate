@@ -1069,14 +1069,14 @@ class OpenRouterTranslator(OpenAITranslator):
         )
         self.prompttext = prompt
         self.add_cache_impact_parameters("prompt", self.prompt("", self.prompttext))
-        
+
     def do_translate(self, text) -> str:
         # OpenRouter requires HTTP headers to be set
         self.client.headers = {
             "HTTP-Referer": "https://pdf2zh.github.io",  # Replace with your site URL
             "X-Title": "PDFMathTranslate",  # Shows in the dashboard
         }
-        
+
         response = self.client.chat.completions.create(
             model=self.model,
             **self.options,

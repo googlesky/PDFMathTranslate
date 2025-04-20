@@ -22,7 +22,6 @@ def check_server_health():
         # Get the main page
         response = requests.get(BASE_URL, timeout=5)
         response.raise_for_status()  # Will raise an exception for 4XX/5XX responses
-        
         # Check if the response contains expected content from the UI
         expected_elements = [
             "PDFMathTranslate",  # Title should be present
@@ -34,9 +33,10 @@ def check_server_health():
             if element not in response.text:
                 logger.error(f"Expected UI element '{element}' not found in response")
                 return False
-                
+        
         logger.info("Health check passed: Server is up and UI elements are present")
         return True
+        
         
     except requests.exceptions.RequestException as e:
         logger.error(f"Health check failed: {str(e)}")
