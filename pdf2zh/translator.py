@@ -1039,3 +1039,47 @@ class QwenMtTranslator(OpenAITranslator):
             extra_body={"translation_options": translation_options},
         )
         return response.choices[0].message.content.strip()
+
+
+class OpenRouterTranslator(OpenAITranslator):
+    # https://openrouter.ai/docs
+    name = "openrouter"
+    envs = {
+        "OPENROUTER_API_KEY": None,
+        "OPENROUTER_MODEL": "anthropic/claude-3-opus",
+    }
+    CustomPrompt = True
+    lang_map = {"zh": "zh-CN", "vi": "vi"}
+
+    def __init__(
+        self, lang_in, lang_out, model, envs=None, prompt=None, ignore_cache=False
+    ):
+        self.set_envs(envs)
+        base_url = "https://openrouter.ai/api/v1"
+        api_key = self.envs["OPENROUTER_API_KEY"]
+        if not model:
+            model = self.envs["OPENROUTER_MODEL"]
+        super().__init__(
+            lang_in,
+            lang_out,
+            model,
+            base_url=base_url,
+            api_key=api_key,
+            ignore_cache=ignore_cache,
+        )
+        self.prompttext = prompt
+        self.add_cache_impact_parameters("prompt", self.prompt("", self.prompttext))
+        
+    def do_translate(self, text) -> str:
+        # OpenRouter requires HTTP headers to be set
+        self.client.headers = {
+            "HTTP-Referer": "https://pdf2zh.github.io",  # Replace with your site URL
+            "X-Title": "PDFMathTranslate",  # Shows in the dashboard
+        }
+        
+        response = self.client.chat.completions.create(
+            model=self.model,
+            **self.options,
+            messages=self.prompt(text, self.prompttext),
+        )
+        return response.choices[0].message.content.strip()
